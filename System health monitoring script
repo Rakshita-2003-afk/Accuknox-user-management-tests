@@ -1,0 +1,52 @@
+import psutil
+import logging
+from datetime import datetime
+
+# ---------------- CONFIGURATION ----------------
+CPU_THRESHOLD = 80      
+MEM_THRESHOLD = 80       
+DISK_THRESHOLD = 85      
+PROC_THRESHOLD = 300    
+LOG_FILE = "/var/log/system_health.log"
+# ------------------------------------------------
+
+# Configure logging
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+def alert(message):
+    print(message)
+    logging.warning(message)
+
+def check_system_health():
+    # CPU
+    cpu = psutil.cpu_percent(interval=1)
+    if cpu > CPU_THRESHOLD:
+        alert(f"[ALERT] CPU usage high: {cpu}%")
+
+    # Memory
+    mem = psutil.virtual_memory().percent
+    if mem > MEM_THRESHOLD:
+        alert(f"[ALERT] Memory usage high: {mem}%")
+
+    # Disk
+    disk = psutil.disk_usage('/').percent
+    if disk > DISK_THRESHOLD:
+        alert(f"[ALERT] Disk usage high: {disk}%")
+
+    # Processes
+    processes = len(psutil.pids())
+    if processes > PROC_THRESHOLD:
+        alert(f"[ALERT] Too many running processes: {processes}")
+
+    # Normal log entry
+    logging.info(
+        f"CPU: {cpu}%, Memory: {mem}%, Disk: {disk}%, Processes: {processes}"
+    )
+
+if _name_ == "_main_":
+    print("Running system health check...")
+    check_system_health()
