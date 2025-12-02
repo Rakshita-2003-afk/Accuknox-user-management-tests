@@ -1,0 +1,57 @@
+
+
+
+import requests
+import logging
+from datetime import datetime
+
+# ---------------- CONFIGURATION ----------------
+URL = "https://your-application.com/health"   # Application health endpoint
+TIMEOUT = 5                                   # seconds
+LOG_FILE = "/var/log/app_health.log"
+# ------------------------------------------------
+
+# Configure logging
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+def check_application_status():
+    try:
+        response = requests.get(URL, timeout=TIMEOUT)
+
+        # Check HTTP status code
+        if 200 <= response.status_code < 400:
+            msg = f"Application is UP (HTTP {response.status_code})"
+            print(msg)
+            logging.info(msg)
+            return True
+        else:
+            msg = f"Application is DOWN (HTTP {response.status_code})"
+            print(msg)
+            logging.warning(msg)
+            return False
+
+    except requests.exceptions.Timeout:
+        msg = "Application is DOWN (Timeout)"
+        print(msg)
+        logging.error(msg)
+        return False
+
+    except requests.exceptions.ConnectionError:
+        msg = "Application is DOWN (Connection Error)"
+        print(msg)
+        logging.error(msg)
+        return False
+
+    except Exception as e:
+        msg = f"Application is DOWN (Unknown Error: {str(e)})"
+        print(msg)
+        logging.error(msg)
+        return False
+
+
+if _name_ == "_main_":
+    check_application_status()
